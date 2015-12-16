@@ -7,7 +7,6 @@ MAINTAINER Zachary Forrest y Salazar <zach.forrest@sonos.com>
 
 ENV RUBY_BRANCH 2.2
 ENV RUBY_VERSION 2.2.3
-ENV NODE_VERSION 4.2.3
 ENV PHANTOMJS_VERSION 1.9.8
 
 # =========================================================================
@@ -37,7 +36,7 @@ RUN gem install bundler --no-ri --no-rdoc
 # Install Ruby Gems
 # =========================================================================
 
-RUN gem install sass slack-notifier	
+RUN gem install sass
 
 # =========================================================================
 # Install Python
@@ -88,7 +87,7 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NPM_CONFIG_LOGLEVEL info
+ENV NPM_CONFIG_LOGLEVEL debug
 ENV NODE_VERSION 4.2.3
 
 RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
@@ -99,6 +98,7 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
   && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc
 
 CMD [ "node" ]
+
 # =========================================================================
 # Install NPM modules
 # =========================================================================
