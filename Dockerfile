@@ -17,7 +17,7 @@ ENV PHANTOMJS_VERSION 1.9.8
 RUN apt-get update
 RUN apt-get -y upgrade
 
-RUN apt-get -y install build-essential zlib1g-dev libssl-dev libreadline6-dev libyaml-dev curl git wget ca-certificates libfreetype6 libfontconfig bzip2 rsync ssh xvfb
+RUN apt-get -y install build-essential zlib1g-dev libssl-dev libreadline6-dev libyaml-dev curl git wget ca-certificates libfreetype6 libfontconfig bzip2 rsync ssh xvfb software-properties-common
 
 ADD http://cache.ruby-lang.org/pub/ruby/$RUBY_BRANCH/ruby-$RUBY_VERSION.tar.gz /tmp/
 
@@ -52,16 +52,24 @@ RUN \
 # Install Java
 # =========================================================================
 
-RUN \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk8-installer
+# Update the APT cache
+RUN sed -i.bak 's/main$/main universe/' /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get upgrade -y
 
-# Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+# Install and setup project dependencies
+RUN apt-get install -y curl wget
+RUN locale-gen en_US en_US.UTF-8
+
+#prepare for Java download
+RUN apt-get install -y python-software-properties
+RUN apt-get install -y software-properties-common
+
+#grab oracle java (auto accept licence)
+RUN add-apt-repository -y ppa:webupd8team/java
+RUN apt-get update
+RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+RUN apt-get install -y oracle-java7-installer
 
 # =========================================================================
 # Install NodeJS
