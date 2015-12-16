@@ -1,9 +1,10 @@
-# SUIT Docker File
-# VERSON 1.0.0
+# docker-suit
 # =========================================================================
 
-FROM ubuntu:12.04
+FROM selenium/standalone-chrome
 MAINTAINER Zachary Forrest y Salazar <zach.forrest@sonos.com>
+
+USER root
 
 ENV RUBY_BRANCH 2.2
 ENV RUBY_VERSION 2.2.3
@@ -48,29 +49,6 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 
 # =========================================================================
-# Install Java
-# =========================================================================
-
-# Update the APT cache
-RUN sed -i.bak 's/main$/main universe/' /etc/apt/sources.list
-RUN apt-get update
-RUN apt-get upgrade -y
-
-# Install and setup project dependencies
-RUN apt-get install -y curl wget
-RUN locale-gen en_US en_US.UTF-8
-
-#prepare for Java download
-RUN apt-get install -y python-software-properties
-RUN apt-get install -y software-properties-common
-
-#grab oracle java (auto accept licence)
-RUN add-apt-repository -y ppa:webupd8team/java
-RUN apt-get update
-RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
-RUN apt-get install -y oracle-java7-installer
-
-# =========================================================================
 # Install NodeJS
 # =========================================================================
 
@@ -87,7 +65,7 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NPM_CONFIG_LOGLEVEL debug
+ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_VERSION 4.2.3
 
 RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
@@ -103,7 +81,7 @@ CMD [ "node" ]
 # Install NPM modules
 # =========================================================================
 
-RUN npm install selenium-standalone grunt-cli karma-cli -g
+RUN npm install grunt-cli karma-cli -g
 
 # =========================================================================
 # Install PhantomJS
@@ -118,26 +96,3 @@ RUN \
   ln -s /srv/var/phantomjs/bin/phantomjs /usr/bin/phantomjs && \
   apt-get autoremove -y && \
   apt-get clean all
-
-# =========================================================================
-# Install Chrome (Latest)
-# =========================================================================
-
-RUN \
-  wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-  echo "deb http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list && \
-  apt-get update && \
-  apt-get install -y google-chrome-stable && \
-  rm -rf /var/lib/apt/lists/*
-
-# Define working directory.
-# -------------------------------------------------------------------------
-WORKDIR /data
-
-# Define default command.
-# -------------------------------------------------------------------------
-CMD ["bash"]
-
-# Expose ports.
-# -------------------------------------------------------------------------
-EXPOSE 5901
