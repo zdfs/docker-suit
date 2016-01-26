@@ -6,8 +6,8 @@ MAINTAINER Zachary Forrest y Salazar <zach.forrest@sonos.com>
 
 USER root
 
-ENV RUBY_BRANCH 2.2
-ENV RUBY_VERSION 2.2.3
+ENV RUBY_BRANCH 2.3
+ENV RUBY_VERSION 2.3.0
 ENV PHANTOMJS_VERSION 1.9.8
 
 # =========================================================================
