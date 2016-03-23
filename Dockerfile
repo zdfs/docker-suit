@@ -1,6 +1,3 @@
-# docker-suit:1.0.0-Firefox
-# =========================================================================
-
 FROM selenium/standalone-chrome
 MAINTAINER Zachary Forrest y Salazar <zach.forrest@sonos.com>
 
