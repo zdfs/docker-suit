@@ -11,10 +11,23 @@ ENV PHANTOMJS_VERSION 1.9.8
 # Install Ruby Environment
 # =========================================================================
 
-RUN apt-get update
-RUN apt-get -y upgrade
-
-RUN apt-get -y install build-essential zlib1g-dev libssl-dev libreadline6-dev libyaml-dev curl git wget ca-certificates libfreetype6 libfontconfig bzip2 rsync ssh xvfb software-properties-common netcat-openbsd
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    dpkg \
+    zlib1g \
+    libreadline6 \
+    curl \
+    git \
+    wget \
+    ca-certificates \
+    libfreetype6 \
+    libfontconfig \
+    bzip2 \
+    rsync \
+    ssh \
+    xvfb \
+    software-properties-common \
+    netcat-openbsd
 
 ADD http://cache.ruby-lang.org/pub/ruby/$RUBY_BRANCH/ruby-$RUBY_VERSION.tar.gz /tmp/
 
