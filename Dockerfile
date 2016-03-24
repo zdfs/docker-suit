@@ -1,4 +1,4 @@
-FROM selenium/standalone-chrome
+FROM ubuntu
 MAINTAINER Zachary Forrest y Salazar <zach.forrest@sonos.com>
 
 USER root
@@ -6,10 +6,6 @@ USER root
 ENV RUBY_BRANCH 2.3
 ENV RUBY_VERSION 2.3.0
 ENV PHANTOMJS_VERSION 1.9.8
-
-# =========================================================================
-# Install Ruby Environment
-# =========================================================================
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -27,7 +23,17 @@ RUN apt-get update && apt-get install -y \
     ssh \
     xvfb \
     software-properties-common \
-    netcat-openbsd
+    python python-dev \
+    python-pip \
+    python-virtualenv \
+    libssl-dev \
+    netcat-openbsd && \
+    apt-get clean all && \
+    rm -rf /var/lib/apt/lists/*
+
+# =========================================================================
+# Install Ruby Environment
+# =========================================================================
 
 ADD http://cache.ruby-lang.org/pub/ruby/$RUBY_BRANCH/ruby-$RUBY_VERSION.tar.gz /tmp/
 
@@ -50,19 +56,10 @@ RUN gem install bundler --no-ri --no-rdoc
 RUN gem install sass
 
 # =========================================================================
-# Install Python
-# =========================================================================
-
-RUN \
-  apt-get update && \
-  apt-get install -y python python-dev python-pip python-virtualenv && \
-  rm -rf /var/lib/apt/lists/*
-
-# =========================================================================
 # Install NodeJS
+# gpg keys listed at https://github.com/nodejs/node
 # =========================================================================
 
-# gpg keys listed at https://github.com/nodejs/node
 RUN set -ex \
   && for key in \
     9554F04D7259F04124DE6B476D5A82AC7E37093B \
@@ -71,6 +68,8 @@ RUN set -ex \
     FD3A5288F042B6850C66B31F09FE44734EB7990E \
     71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
     DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+    B9AE9905FFD7803F25714661B63B535A4C206CA9 \
+    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
   ; do \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
@@ -78,12 +77,12 @@ RUN set -ex \
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_VERSION 4.4.1
 
-RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
-  && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
-  && gpg --verify SHASUMS256.txt.asc \
-  && grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
-  && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
-  && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc
+RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
+ && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
+ && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
+ && grep " node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
+ && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
+ && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt
 
 CMD [ "node" ]
 
@@ -91,18 +90,6 @@ CMD [ "node" ]
 # Install NPM modules
 # =========================================================================
 
-RUN npm install grunt-cli karma-cli -g
+RUN npm install -g gulp-cli selenium-standalone webdriverio phantomjs-prebuilt
 
-# =========================================================================
-# Install PhantomJS
-# =========================================================================
-
-RUN \
-  mkdir -p /srv/var && \
-  wget -q --no-check-certificate -O /tmp/phantomjs-$PHANTOMJS_VERSION-linux-x86_64.tar.bz2 https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-$PHANTOMJS_VERSION-linux-x86_64.tar.bz2 && \
-  tar -xjf /tmp/phantomjs-$PHANTOMJS_VERSION-linux-x86_64.tar.bz2 -C /tmp && \
-  rm -rf /tmp/phantomjs-$PHANTOMJS_VERSION-linux-x86_64.tar.bz2 && \
-  mv /tmp/phantomjs-$PHANTOMJS_VERSION-linux-x86_64/ /srv/var/phantomjs && \
-  ln -s /srv/var/phantomjs/bin/phantomjs /usr/bin/phantomjs && \
-  apt-get autoremove -y && \
-  apt-get clean all
+CMD [ "selenium-standalone install" ]
